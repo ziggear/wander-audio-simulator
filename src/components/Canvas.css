@@ -1,0 +1,45 @@
+.canvas-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.audio-canvas {
+  border: 2px solid #333;
+  border-radius: 8px;
+  cursor: crosshair;
+  background: #0a0a0a;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.audio-canvas:hover {
+  border-color: #444;
+}
+
+.canvas-legend {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  color: #ccc;
+}
+
+.legend-item:last-child {
+  margin-bottom: 0;
+}
+
+.legend-icon {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
