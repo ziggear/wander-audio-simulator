@@ -1,7 +1,23 @@
 export default {
   app: {
     title: "3D 音频模拟器 - HRTF",
-    subtitle: "点击画布创建音源，上传音频文件，体验立体声效果"
+    subtitle: "点击画布创建音源，上传音频文件，体验立体声效果",
+    mapView: "地图视图",
+    canvasView: "画布视图"
+  },
+  audioMap: {
+    title: "音频地图 - 空间音频",
+    subtitle: "上传带位置信息的音频文件，在地图上体验 3D 音频",
+    mapStyle: "地图样式",
+    stylePositron: "浅色 (Positron)",
+    styleDark: "深色",
+    styleSatellite: "卫星图",
+    listenerPosition: "听者位置",
+    useBrowserLocation: "使用浏览器定位",
+    dragToSet: "拖拽设置位置",
+    audioList: "音频列表",
+    uploadAudio: "上传音频",
+    noAudio: "未上传音频文件"
   },
   sourcePanel: {
     title: "音源列表",

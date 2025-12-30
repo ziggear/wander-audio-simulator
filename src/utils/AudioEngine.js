@@ -242,6 +242,130 @@ export class AudioEngine {
     }
   }
 
+  // Convert GPS coordinates to 3D audio space coordinates relative to listener
+  gpsToAudioSpace(sourceLat, sourceLng, listenerLat, listenerLng) {
+    // Calculate distance and bearing between two GPS points
+    const R = 6371000 // Earth radius in meters
+    
+    const dLat = (sourceLat - listenerLat) * Math.PI / 180
+    const dLng = (sourceLng - listenerLng) * Math.PI / 180
+    
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(listenerLat * Math.PI / 180) * Math.cos(sourceLat * Math.PI / 180) *
+              Math.sin(dLng / 2) * Math.sin(dLng / 2)
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+    const distance = R * c // Distance in meters
+    
+    // Calculate bearing (direction from listener to source)
+    const y = Math.sin(dLng) * Math.cos(sourceLat * Math.PI / 180)
+    const x = Math.cos(listenerLat * Math.PI / 180) * Math.sin(sourceLat * Math.PI / 180) -
+              Math.sin(listenerLat * Math.PI / 180) * Math.cos(sourceLat * Math.PI / 180) * Math.cos(dLng)
+    const bearing = Math.atan2(y, x) * 180 / Math.PI
+    
+    // Convert to 3D audio space
+    // Scale: 1 meter = 1 unit in audio space (adjust as needed)
+    const scale = 0.001 // Scale down for better audio effect (1km = 1 unit)
+    const distanceScaled = distance * scale
+    
+    // Convert bearing to radians
+    const bearingRad = bearing * Math.PI / 180
+    
+    // Calculate X, Y, Z coordinates
+    // X: East is positive (right)
+    // Y: Up is positive (we'll keep it at 0 for ground level)
+    // Z: North is negative (forward in Web Audio API convention)
+    const audioX = Math.sin(bearingRad) * distanceScaled
+    const audioY = 0 // Ground level
+    const audioZ = -Math.cos(bearingRad) * distanceScaled // Negative for forward
+    
+    return { x: audioX, y: audioY, z: audioZ, distance: distanceScaled }
+  }
+
+  async playMapSources(sources, listenerPosition) {
+    await this.init()
+
+    // Stop all existing sources
+    this.stopAll()
+
+    // Start all sources with audio buffers and positions
+    for (const source of sources) {
+      if (!source.audioBuffer || !source.position) continue
+
+      try {
+        // Convert GPS coordinates to audio space
+        const audioSpace = this.gpsToAudioSpace(
+          source.position.lat,
+          source.position.lng,
+          listenerPosition.lat,
+          listenerPosition.lng
+        )
+
+        // Create audio node chain: bufferSource -> gain -> panner -> destination
+        const bufferSource = this.audioContext.createBufferSource()
+        const gainNode = this.audioContext.createGain()
+        const pannerNode = this.audioContext.createPanner()
+
+        // Configure PannerNode
+        pannerNode.panningModel = 'HRTF'
+        pannerNode.distanceModel = 'inverse'
+        pannerNode.refDistance = 1
+        pannerNode.maxDistance = 10000 // Larger max distance for map scale
+        pannerNode.rolloffFactor = 1
+        pannerNode.coneInnerAngle = 360
+        pannerNode.coneOuterAngle = 360
+        pannerNode.coneOuterGain = 0
+
+        // Set source position
+        pannerNode.positionX.value = audioSpace.x
+        pannerNode.positionY.value = audioSpace.y
+        pannerNode.positionZ.value = audioSpace.z
+
+        // Set volume
+        gainNode.gain.value = source.volume || 1.0
+
+        // Connect nodes
+        bufferSource.buffer = source.audioBuffer
+        bufferSource.loop = source.loop || false
+        bufferSource.connect(gainNode)
+        gainNode.connect(pannerNode)
+        pannerNode.connect(this.audioContext.destination)
+
+        // Play
+        bufferSource.start(0)
+
+        // Save reference
+        this.activeSources.set(source.id, {
+          source,
+          bufferSource,
+          gainNode,
+          pannerNode
+        })
+      } catch (error) {
+        console.error(`Failed to play source ${source.id}:`, error)
+      }
+    }
+
+    // Start update loop
+    this.startUpdateLoop()
+  }
+
+  updateMapSourcePosition(sourceId, sourceLat, sourceLng, listenerLat, listenerLng) {
+    const activeSource = this.activeSources.get(sourceId)
+    if (!activeSource) return
+
+    const audioSpace = this.gpsToAudioSpace(
+      sourceLat,
+      sourceLng,
+      listenerLat,
+      listenerLng
+    )
+
+    // Update PannerNode position
+    activeSource.pannerNode.positionX.value = audioSpace.x
+    activeSource.pannerNode.positionY.value = audioSpace.y
+    activeSource.pannerNode.positionZ.value = audioSpace.z
+  }
+
   cleanup() {
     this.stopAll()
     if (this.audioContext) {

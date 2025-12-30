@@ -1,7 +1,23 @@
 export default {
   app: {
     title: "3D Audio Simulator - HRTF",
-    subtitle: "Click on canvas to create sources, upload audio files, experience stereo effects"
+    subtitle: "Click on canvas to create sources, upload audio files, experience stereo effects",
+    mapView: "Map View",
+    canvasView: "Canvas View"
+  },
+  audioMap: {
+    title: "Audio Map - Spatial Audio",
+    subtitle: "Upload audio files with location data, experience 3D audio on map",
+    mapStyle: "Map Style",
+    stylePositron: "Light (Positron)",
+    styleDark: "Dark",
+    styleSatellite: "Satellite",
+    listenerPosition: "Listener Position",
+    useBrowserLocation: "Use Browser Location",
+    dragToSet: "Drag to Set Position",
+    audioList: "Audio List",
+    uploadAudio: "Upload Audio",
+    noAudio: "No audio files uploaded"
   },
   sourcePanel: {
     title: "Source List",

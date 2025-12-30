@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react'
+import { Link, Routes, Route } from 'react-router-dom'
 import Canvas from './components/Canvas'
 import SourcePanel from './components/SourcePanel'
 import PlaybackControls from './components/PlaybackControls'
 import LanguageSwitcher from './components/LanguageSwitcher'
+import AudioMap from './pages/AudioMap'
 import { AudioEngine } from './utils/AudioEngine'
 import { useLanguage } from './contexts/LanguageContext'
 import { getBuiltinSoundPath } from './config/builtinSounds'
@@ -11,7 +13,7 @@ import './App.css'
 // Fixed ID for ambient sound
 const AMBIENT_SOUND_ID = 'ambient-sound'
 
-function App() {
+function Home() {
   const { t } = useLanguage()
   const [sources, setSources] = useState([])
   const [selectedSource, setSelectedSource] = useState(null)
@@ -283,7 +285,10 @@ function App() {
             <h1>{t('app.title')}</h1>
             <p>{t('app.subtitle')}</p>
           </div>
-          <LanguageSwitcher />
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <Link to="/map" className="nav-link">{t('app.mapView')}</Link>
+            <LanguageSwitcher />
+          </div>
         </div>
       </div>
       
@@ -320,5 +325,13 @@ function App() {
   )
 }
 
-export default App
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/map" element={<AudioMap />} />
+    </Routes>
+  )
+}
 
+export default App

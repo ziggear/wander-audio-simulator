@@ -4,8 +4,8 @@ import react from '@vitejs/plugin-react'
 // For GitHub Pages deployment:
 // - If repository name is 'username.github.io', set base to '/'
 // - Otherwise, set base to '/repository-name/'
-// Example: base: '/wander-audio-simulator/'
-const base = process.env.VITE_BASE_PATH || '/wander-audio-simulator/'
+// In development, use '/' for easier local testing
+const base = process.env.VITE_BASE_PATH || (process.env.NODE_ENV === 'production' ? '/wander-audio-simulator/' : '/')
 
 export default defineConfig({
   plugins: [react()],
